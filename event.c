@@ -85,8 +85,10 @@ sigexit(int signo)
         exitFlag = 1;
     else if(signo == SIGUSR2)
         exitFlag = 2;
-    else
+    else if(signo == SIGHUP)
         exitFlag = 3;
+    else
+        exitFlag = 4;
 }
 #endif
 
@@ -636,9 +638,11 @@ eventLoop()
                 reopenLog();
             if(exitFlag >= 2) {
                 discardObjects(1, 0);
-                if(exitFlag >= 3)
+                if(exitFlag >= 4)
                     return;
                 free_chunk_arenas();
+                if(exitFlag == 3)
+                  proxyOffline = !proxyOffline;
             } else {
                 writeoutObjects(1);
             }
@@ -680,7 +684,7 @@ eventLoop()
                 sleep(1);
             } else {
                 do_log_error(L_ERROR, errno, "Couldn't poll");
-                exitFlag = 3;
+                exitFlag = 4;
             }
             continue;
         }
@@ -830,5 +834,5 @@ signalCondition(ConditionPtr condition)
 void
 polipoExit()
 {
-    exitFlag = 3;
+    exitFlag = 4;
 }
