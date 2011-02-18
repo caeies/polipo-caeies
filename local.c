@@ -103,9 +103,9 @@ printConfig(FILE *out, char *dummy)
             "\"-//W3C//DTD HTML 4.01 Transitional//EN\" "
             "\"http://www.w3.org/TR/html4/loose.dtd\">\n"
             "<html><head>\n"
-            "<title>Polipo configuration</title>\n"
+            "<title>%s configuration</title>\n"
             "</head><body>\n"
-            "<h1>Polipo configuration</h1>\n");
+            "<h1>%s configuration</h1>\n", programName->string, programName->string);
     printConfigVariables(out, 1);
     fprintf(out, "<p><a href=\"/polipo/\">back</a></p>");
     fprintf(out, "</body></html>\n");
@@ -180,16 +180,16 @@ httpSpecialRequest(ObjectPtr object, int method, int from, int to,
                      "\"-//W3C//DTD HTML 4.01 Transitional//EN\" "
                      "\"http://www.w3.org/TR/html4/loose.dtd\">\n"
                      "<html><head>\n"
-                     "<title>Polipo</title>\n"
+                     "<title>%s</title>\n"
                      "</head><body>\n"
-                     "<h1>Polipo</h1>\n"
+                     "<h1>%s</h1>\n"
                      "<p><a href=\"status?\">Status report</a>.</p>\n"
                      "<p><a href=\"config?\">Current configuration</a>.</p>\n"
                      "<p><a href=\"servers?\">Known servers</a>.</p>\n"
 #ifndef NO_DISK_CACHE
                      "<p><a href=\"index?\">Disk cache index</a>.</p>\n"
 #endif
-                     "</body></html>\n");
+                     "</body></html>\n", programName->string, programName->string);
         object->length = object->size;
     } else if(matchUrl("/polipo/status", object)) {
         objectPrintf(object, 0,
@@ -197,9 +197,9 @@ httpSpecialRequest(ObjectPtr object, int method, int from, int to,
                      "\"-//W3C//DTD HTML 4.01 Transitional//EN\" "
                      "\"http://www.w3.org/TR/html4/loose.dtd\">\n"
                      "<html><head>\n"
-                     "<title>Polipo status report</title>\n"
+                     "<title>%s status report</title>\n"
                      "</head><body>\n"
-                     "<h1>Polipo proxy on %s:%d: status report</h1>\n"
+                     "<h1>%s proxy on %s:%d: status report</h1>\n"
                      "<p>The %s proxy on %s:%d is %s.</p>\n"
                      "<p>There are %d public and %d private objects "
                      "currently in memory using %d KB in %d chunks "
@@ -222,6 +222,7 @@ httpSpecialRequest(ObjectPtr object, int method, int from, int to,
                      "value=\"Free chunk arenas\"></form></p>\n"
                      "<p><a href=\"/polipo/\">back</a></p>"
                      "</body></html>\n",
+                     programName->string, programName->string,
                      proxyName->string, proxyPort,
                      cacheIsShared ? "shared" : "private",
                      proxyName->string, proxyPort,

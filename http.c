@@ -59,6 +59,7 @@ int disableVia = 1;
 int proxyOffline = 0;
 int relaxTransparency = 0;
 AtomPtr proxyAddress = NULL;
+AtomPtr programName = NULL;
 
 static int timeoutSetter(ConfigVariablePtr var, void *value);
 
@@ -66,6 +67,7 @@ void
 preinitHttp()
 {
     proxyAddress = internAtom("127.0.0.1");
+    programName = internAtom("Polipo");
     CONFIG_VARIABLE_SETTABLE(disableProxy, CONFIG_BOOLEAN, configIntSetter,
                              "Whether to be a web server only.");
     CONFIG_VARIABLE_SETTABLE(proxyOffline, CONFIG_BOOLEAN, configIntSetter,
@@ -79,6 +81,8 @@ preinitHttp()
                     "The IP address on which the proxy listens.");
     CONFIG_VARIABLE_SETTABLE(proxyName, CONFIG_ATOM_LOWER, configAtomSetter,
                              "The name by which the proxy is known.");
+    CONFIG_VARIABLE_SETTABLE(programName, CONFIG_ATOM, configAtomSetter,
+                             "The name by which the program is known.");
     CONFIG_VARIABLE_SETTABLE(clientTimeout, CONFIG_TIME, 
                              timeoutSetter, "Client-side timeout.");
     CONFIG_VARIABLE_SETTABLE(serverTimeout, CONFIG_TIME,
@@ -894,10 +898,10 @@ httpWriteErrorHeaders(char *buf, int size, int offset, int do_body,
         m = snnprintf(body, m, CHUNK_SIZE,
                       ":<br><br>"
                       "\n<strong>%3d %s</strong></p>"
-                      "\n<hr>Generated %s by Polipo on <em>%s:%d</em>."
+                      "\n<hr>Generated %s by %s on <em>%s:%d</em>."
                       "\n</body></html>\r\n",
                       code, htmlMessage,
-                      timeStr, proxyName->string, proxyPort);
+                      timeStr, programName->string, proxyName->string, proxyPort);
         if(m <= 0 || m >= CHUNK_SIZE) {
             do_log(L_ERROR, "Couldn't write error body.\n");
             dispose_chunk(body);
