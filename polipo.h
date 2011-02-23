@@ -216,6 +216,9 @@ THE SOFTWARE.
 #include "auth.h"
 #include "tunnel.h"
 
+/* defined dynamicaly in version.c */
+extern const char gitVersion[];
+
 extern AtomPtr configFile;
 extern int daemonise;
 extern AtomPtr pidFile;

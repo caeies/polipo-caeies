@@ -36,6 +36,7 @@ usage(char *argv0)
     fprintf(stderr, "  -v: display the list of configuration variables.\n");
     fprintf(stderr, "  -x: perform expiry on the disk cache.\n");
     fprintf(stderr, "  -c: specify the configuration file to use.\n");
+    fprintf(stderr, "git version : %s\n", gitVersion);
 }
 
 int

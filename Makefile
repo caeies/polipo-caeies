@@ -4,6 +4,7 @@ MANDIR = $(PREFIX)/man
 INFODIR = $(PREFIX)/info
 LOCAL_ROOT = /usr/share/polipo/www
 DISK_CACHE_ROOT = /var/cache/polipo
+GIT_VERSION=$(shell git log -1 --format=%H || echo Unknown)
 
 # To compile with Unix CC:
 
@@ -70,7 +71,7 @@ SRCS = util.c event.c io.c chunk.c atom.c object.c log.c diskcache.c main.c \
 OBJS = util.o event.o io.o chunk.o atom.o object.o log.o diskcache.o main.o \
        config.o local.o http.o client.o server.o auth.o tunnel.o \
        http_parse.o parse_time.o dns.o forbidden.o \
-       md5import.o ftsimport.o socks.o mingw.o
+       md5import.o ftsimport.o socks.o mingw.o version.o
 
 polipo$(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o polipo$(EXE) $(OBJS) $(MD5LIBS) $(LDLIBS)
@@ -78,6 +79,14 @@ polipo$(EXE): $(OBJS)
 ftsimport.o: ftsimport.c fts_compat.c
 
 md5import.o: md5import.c md5.c
+
+version.o: version.c
+
+version.c: version$(GIT_VERSION).inc
+	@echo \#include \"version$(GIT_VERSION).inc\" > $@
+
+version$(GIT_VERSION).inc:
+	@echo const char gitVersion[] = \"$(GIT_VERSION)\"\; > $@
 
 .PHONY: all install install.binary install.man
 
@@ -133,7 +142,7 @@ TAGS: $(SRCS)
 .PHONY: clean
 
 clean:
-	-rm -f polipo$(EXE) *.o *~ core TAGS gmon.out
+	-rm -f polipo$(EXE) *.o *~ core TAGS gmon.out version*.inc version.c
 	-rm -f polipo.cp polipo.fn polipo.log polipo.vr
 	-rm -f polipo.cps polipo.info* polipo.pg polipo.toc polipo.vrs
 	-rm -f polipo.aux polipo.dvi polipo.ky polipo.ps polipo.tp
