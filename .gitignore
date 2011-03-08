@@ -1,3 +1,4 @@
 polipo
 core
 *.o
+version*.c

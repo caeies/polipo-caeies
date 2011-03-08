@@ -4,7 +4,8 @@ MANDIR = $(PREFIX)/man
 INFODIR = $(PREFIX)/info
 LOCAL_ROOT = /usr/share/polipo/www
 DISK_CACHE_ROOT = /var/cache/polipo
-GIT_VERSION=$(shell git log -1 --format=%H || echo Unknown)
+GIT ?= git
+GIT_VERSION=$(shell $(GIT) log -1 --format=%H || echo Unknown)$(shell $(GIT) status --porcelain |grep "^[ MARCDU][ MDAU] " > /dev/null && echo "-Modified")
 
 # To compile with Unix CC:
 
