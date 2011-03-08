@@ -83,10 +83,10 @@ md5import.o: md5import.c md5.c
 
 version.o: version.c
 
-version.c: version$(GIT_VERSION).inc
-	@echo \#include \"version$(GIT_VERSION).inc\" > $@
+version.c: version-$(GIT_VERSION).inc
+	@echo \#include \"version-$(GIT_VERSION).inc\" > $@
 
-version$(GIT_VERSION).inc:
+version-$(GIT_VERSION).inc:
 	@echo const char gitVersion[] = \"$(GIT_VERSION)\"\; > $@
 
 .PHONY: all install install.binary install.man
