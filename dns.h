@@ -46,3 +46,4 @@ void preinitDns(void);
 void initDns(void);
 int do_gethostbyname(char *name, int count,
                      int (*handler)(int, GethostbynameRequestPtr), void *data);
+void resetDns(void);

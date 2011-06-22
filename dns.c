@@ -100,6 +100,7 @@ static int dnsDecodeReply(char *buf, int offset, int n,
 static int dnsHandler(int status, ConditionHandlerPtr chandler);
 static int dnsGethostbynameFallback(int id, AtomPtr message);
 static int sendQuery(DnsQueryPtr query);
+static int establishDnsSocket();
 
 static int idSeed;
 #endif
@@ -220,8 +221,8 @@ preinitDns()
 #endif
 }
 
-void
-initDns()
+int
+resetNameserverAddress()
 {
 #ifndef NO_FANCY_RESOLVER
     int rc;
@@ -230,11 +231,6 @@ initDns()
 #ifdef HAVE_IPv6
     struct sockaddr_in6 *sin6 = (struct sockaddr_in6*)&nameserverAddress;
 #endif
-
-    atomLocalhost = internAtom("localhost");
-    atomLocalhostDot = internAtom("localhost.");
-    inFlightDnsQueries = NULL;
-    inFlightDnsQueriesLast = NULL;
 
     gettimeofday(&t, NULL);
     idSeed = t.tv_usec & 0xFFFF;
@@ -251,8 +247,23 @@ initDns()
     if(rc != 1) {
         do_log(L_ERROR, "DNS: couldn't parse name server %s.\n",
                dnsNameServer->string);
-        exit(1);
+        return 1;
     }
+#endif
+    return 0;
+}
+
+void
+initDns()
+{
+#ifndef NO_FANCY_RESOLVER
+    atomLocalhost = internAtom("localhost");
+    atomLocalhostDot = internAtom("localhost.");
+    inFlightDnsQueries = NULL;
+    inFlightDnsQueriesLast = NULL;
+
+    if(resetNameserverAddress() == 1)
+      exit(1);
 #endif
 }
 
@@ -726,6 +737,31 @@ really_do_gethostbyname(AtomPtr name, ObjectPtr object)
 
 static int dnsSocket = -1;
 static FdEventHandlerPtr dnsSocketHandler = NULL;
+
+void resetDns(void)
+{
+    int oldSocket = dnsSocket;
+    FdEventHandlerPtr oldHandler = dnsSocketHandler;
+    int rc;
+
+    if(dnsSocket < 0)
+      return;
+
+    dnsSocket = -1;
+    dnsSocketHandler = NULL;
+    /* we need to close the socket */
+    unregisterFdEvent(oldHandler);
+    CLOSE(oldSocket);
+    /* reparse the resolv.conf */
+    parseResolvConf("/etc/resolv.conf");
+    /* reset the nameserverAddress */
+    resetNameserverAddress();
+    /* Then restablish the dns socket */
+    rc = establishDnsSocket();
+    if(rc < 0) {
+        do_log_error(L_ERROR, -rc, "Couldn't establish DNS socket when reseting the DNS.\n");
+    }
+}
 
 static int
 dnsHandler(int status, ConditionHandlerPtr chandler)
@@ -1742,6 +1778,10 @@ static int
 really_do_dns(AtomPtr name, ObjectPtr object)
 {
     abort();
+}
+
+void resetDns()
+{
 }
 
 #endif

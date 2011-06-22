@@ -645,6 +645,7 @@ eventLoop()
                   proxyOffline = !proxyOffline;
             } else {
                 writeoutObjects(1);
+                resetDns();
             }
             initForbidden();
             exitFlag = 0;
