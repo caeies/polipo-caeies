@@ -44,7 +44,7 @@ THE SOFTWARE.
 #define D_IO 0x200000
 
 #define LOGGING_DEFAULT (L_ERROR | L_WARN | L_INFO)
-#define LOGGING_MAX 0xFF
+#define LOGGING_MAX 0xFFFFFF
 
 extern int scrubLogs;
 
