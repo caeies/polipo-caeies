@@ -46,6 +46,10 @@ AtomPtr uncachableFile = NULL;
 DomainPtr *uncachableDomains = NULL;
 regex_t *uncachableRegex = NULL;
 
+AtomPtr noParentProxyFile = NULL;
+DomainPtr *noParentProxyDomains = NULL;
+regex_t *noParentProxyRegex = NULL;
+
 /* these three are only used internally by {parse,read}DomainFile */
 /* to avoid having to pass it all as parameters */
 static DomainPtr *domains;
@@ -83,6 +87,9 @@ preinitForbidden(void)
 #endif
     CONFIG_VARIABLE_SETTABLE(uncachableFile, CONFIG_ATOM, atomSetterForbidden,
                              "File specifying uncachable URLs.");
+
+    CONFIG_VARIABLE_SETTABLE(noParentProxyFile, CONFIG_ATOM, atomSetterForbidden,
+                             "File specifying bypassing of proxyParent");
 }
 
 static int
@@ -332,6 +339,26 @@ initForbidden(void)
 
     parseDomainFile(uncachableFile, &uncachableDomains, &uncachableRegex);
 
+    if(noParentProxyFile)
+      noParentProxyFile = expandTilde(noParentProxyFile);
+
+    if(noParentProxyFile == NULL) {
+         noParentProxyFile = expandTilde(internAtom("~/.polipo-noparentproxy"));
+        if(noParentProxyFile) {
+            if(access(noParentProxyFile->string, F_OK) < 0) {
+                releaseAtom(noParentProxyFile);
+                noParentProxyFile = NULL;
+            }
+        }
+    }
+
+    if(noParentProxyFile == NULL) {
+        if(access("/etc/polipo/noparentproxy", F_OK) >= 0)
+            noParentProxyFile = internAtom("/etc/polipo/noparentproxy");
+    }
+
+    parseDomainFile(noParentProxyFile, &noParentProxyDomains, &noParentProxyRegex);
+
     return;
 }
 
@@ -371,6 +398,32 @@ urlIsMatched(char *url, int length, DomainPtr *domains, regex_t *regex)
         return !regexec(regex, url, 0, NULL, 0);
 
     return 0;
+}
+
+int
+dnsIsMatched(char *dns, int length, DomainPtr *domains)
+{
+    assert(dns[length] == '\0');
+
+    if(domains) {
+        DomainPtr *domain;
+        domain = domains;
+        while(*domain) {
+            if((((*domain)->length < length && dns[length - (*domain)->length] == '.') 
+                        || (*domain)->length == length) &&
+                    memcmp(dns + length - (*domain)->length,
+                        (*domain)->domain,
+                        (*domain)->length) == 0)
+                return 1;
+            domain++;
+        }
+    }
+    return 0;
+}
+
+int urlIsNoParentProxyable(char *url, int length)
+{
+    return dnsIsMatched(url, length, noParentProxyDomains);
 }
 
 int
@@ -755,6 +808,12 @@ void
 initForbidden()
 {
     return;
+}
+
+int
+urlIsNoParentProxyable(char * url, int length)
+{
+    return 0;
 }
 
 int

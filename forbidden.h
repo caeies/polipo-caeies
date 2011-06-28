@@ -32,6 +32,7 @@ typedef struct _RedirectRequest {
 
 void preinitForbidden(void);
 void initForbidden(void);
+int urlIsNoParentProxyable(char *url, int length);
 int urlIsUncachable(char *url, int length);
 int urlForbidden(AtomPtr url,
                  int (*handler)(int, AtomPtr, AtomPtr, AtomPtr, void*),

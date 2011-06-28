@@ -1331,7 +1331,9 @@ considered as being at a lower (sub)layer than HTTP.
 @subsection HTTP parent proxies
 @vindex parentProxy
 @vindex parentAuthCredentials
+@vindex noparentProxyFile
 @cindex parent proxy
+@cindex bypass proxy parent
 @cindex upstream proxy
 @cindex firewall
 @cindex authentication
@@ -1351,6 +1353,21 @@ encrypted compressed @code{ssh} link:
 @example
 $ ssh -f -C -L 8124:localhost:8123 trurl polipo
 $ polipo parentProxy=localhost:8124
+@end example
+
+In some circumstances, It may be helpfull to bypass the proxy Parent for
+some hosts. This is where the @code{noparentProxyFile} directive might 
+be usefull. It uses the @code{forbiddenFile} (@pxref{Internal forbidden list})
+file syntax to define domain and ip that should be required directly
+instead of using a parent proxy. Do @emph{not} use the regex, even if it's
+available. The cheks are only done against the same dns/ip (no resolution occurs).
+If not specified, its location defaults to @samp{~/.polipo-noparentproxy} or
+@samp{/etc/polipo/noparentproxy}, whichever exists.
+
+A sample file could be :
+@example
+localhost
+127.0.0.1
 @end example
 
 @node SOCKS parent proxies,  , HTTP parent proxies, Parent proxies

@@ -403,8 +403,7 @@ httpMakeServerRequest(char *name, int port, ObjectPtr object,
     int rc;
 
     assert(!(object->flags & OBJECT_INPROGRESS));
-
-    if(parentHost) {
+    if(parentHost && urlIsNoParentProxyable(name, strlen(name)) == 0) {
         server = getServer(parentHost->string, parentPort, 1);
     } else {
         server = getServer(name, port, 0);
