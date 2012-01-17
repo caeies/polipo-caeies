@@ -634,6 +634,11 @@ eventLoop()
     while(1) {
     again:
         if(exitFlag) {
+          if(exitFlag == 3) {
+            proxyOffline = !proxyOffline;
+            do_log(L_ERROR, "switch the proxyOffline mode to %d\n", proxyOffline);
+            resetDns();
+          } else {
             if(exitFlag < 3)
                 reopenLog();
             if(exitFlag >= 2) {
@@ -641,12 +646,11 @@ eventLoop()
                 if(exitFlag >= 4)
                     return;
                 free_chunk_arenas();
-                if(exitFlag == 3)
-                  proxyOffline = !proxyOffline;
             } else {
                 writeoutObjects(1);
                 resetDns();
             }
+          }
             initForbidden();
             exitFlag = 0;
         }
