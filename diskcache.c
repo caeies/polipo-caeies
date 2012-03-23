@@ -489,7 +489,7 @@ createFile(const char *name, int path_start)
     while(name[n] != '\0' && n < 1024) {
         while(name[n] != '/' && name[n] != '\0' && n < 512)
             n++;
-        if(name[n] != '/' || n >= 1024)
+        if(name[n] != '/' || n >= 1023)
             break;
         memcpy(buf, name, n + 1);
         buf[n + 1] = '\0';
