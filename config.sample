@@ -155,6 +155,12 @@
 
 # mindlesslyCacheVary = true
 
+# Uncomment this if you want vary header to be treated as normal
+# ressources with a vary Header (this is not a good idea when)
+# sharing the cache betweer different browsers
+
+# mindlesslyCacheVary = maybe
+
 # Uncomment this if you want to add a no-transform directive to all
 # outgoing requests.
 

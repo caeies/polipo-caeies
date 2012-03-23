@@ -58,9 +58,9 @@ preinitObject()
                              "when idle.");
     CONFIG_VARIABLE_SETTABLE(cacheIsShared, CONFIG_BOOLEAN, configIntSetter,
                              "If false, ignore s-maxage and private.");
-    CONFIG_VARIABLE_SETTABLE(mindlesslyCacheVary, CONFIG_BOOLEAN,
+    CONFIG_VARIABLE_SETTABLE(mindlesslyCacheVary, CONFIG_TRISTATE,
                              configIntSetter,
-                             "If true, mindlessly cache negotiated objects.");
+                             "If true, mindlessly cache negotiated objects, If maybe, try the other rules as expected (Only use it with the same Browser)");
     CONFIG_VARIABLE(objectHashTableSize, CONFIG_INT,
                     "Size of the object hash table (0 = auto).");
     CONFIG_VARIABLE(objectHighMark, CONFIG_INT,
@@ -1026,7 +1026,8 @@ objectMustRevalidate(ObjectPtr object, CacheControlPtr cache_control)
     if(cacheIsShared && (flags & CACHE_PRIVATE))
         return 1;
 
-    if(!mindlesslyCacheVary && (flags & CACHE_VARY))
+    //if mindlesslyCacheVary is maybe, check other rules
+    if(mindlesslyCacheVary == 2 && (flags & CACHE_VARY))
         return 1;
 
     if(dontCacheCookies && (flags & CACHE_COOKIE))

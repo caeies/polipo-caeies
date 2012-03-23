@@ -1678,8 +1678,11 @@ are stale.
 If @code{mindlesslyCacheVary} is true, the presence of a @samp{Vary}
 header (which indicates that content-negotiation occurred,
 @pxref{Censor Accept-Language}) is ignored, and cached negotiated
-instances are mindlessly returned to the client.  If it is false (the
-default), negotiated instances are revalidated on every client
+instances are mindlessly returned to the client. If it is maybe, then
+the cache will proceed with normal rules to determine if it must
+revalidate or not. Don't use this if you share your proxy with other
+users or if you use multiple browser. If it is false (the default),
+ negotiated instances are revalidated on every client
 request.
 
 Unfortunately, a number of servers (most notably some versions of
