@@ -1205,16 +1205,15 @@ httpParseHeaders(int client, AtomPtr url,
                 }
             } 
             if(name == atomVary) {
-                if(!token_compare(buf, value_start, value_end, "host") &&
-                   !token_compare(buf, value_start, value_end, "*")) {
+                if(token_compare(buf, value_start, value_end, "*")) {
+                    //This page must be ever revalidated as per (RFC 2616, 14.44).
+                    cache_control.flags |= CACHE_MUST_REVALIDATE;
+                } else if(!token_compare(buf, value_start, value_end, "host")) { 
                     /* What other vary headers should be ignored? */
                     do_log(L_VARY, "Vary header present (");
                     do_log_n(L_VARY,
                              buf + value_start, value_end - value_start);
                     do_log(L_VARY, ").\n");
-                } else {
-                   //Don't cache this pages
-                   cache_control.flags |= CACHE_NO;
                 }
                 cache_control.flags |= CACHE_VARY;
             } else if(name == atomAuthorization) {
