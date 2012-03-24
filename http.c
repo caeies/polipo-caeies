@@ -355,7 +355,7 @@ httpWriteObjectHeaders(char *buf, int offset, int len,
     }
 
     n = httpPrintCacheControl(buf, n, len,
-                              object->cache_control, NULL);
+                              object->cache_control, NULL, object);
     if(n < 0)
         goto fail;
 
@@ -389,7 +389,7 @@ cachePrintSeparator(char *buf, int offset, int len,
 
 int
 httpPrintCacheControl(char *buf, int offset, int len,
-                      int flags, CacheControlPtr cache_control)
+                      int flags, CacheControlPtr cache_control, ObjectPtr object)
 {
     int n = offset;
     int sub = 0;
@@ -435,7 +435,18 @@ httpPrintCacheControl(char *buf, int offset, int len,
         PRINT_SEP();
         n = snnprintf(buf, n, len, "only-if-cached");
     }
-    if(cache_control) {
+    if(object) {
+        if(object->max_age >= 0) {
+             PRINT_SEP();
+            n = snnprintf(buf, n, len, "max-age=%d",
+                          object->max_age);
+        }       
+        if(object->s_maxage >= 0) {
+            PRINT_SEP();
+            n = snnprintf(buf, n, len, "s-maxage=%d", 
+                          object->s_maxage);
+        }
+    } else if(cache_control) {
         if(cache_control->max_age >= 0) {
             PRINT_SEP();
             n = snnprintf(buf, n, len, "max-age=%d",

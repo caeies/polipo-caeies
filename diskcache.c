@@ -980,6 +980,20 @@ validateEntry(ObjectPtr object, int fd,
            last_modified != object->last_modified)
             goto invalid;
 
+        if((cache_control.max_age >= 0) != (object->max_age >= 0))
+            goto invalid;
+
+        if(cache_control.max_age >= 0 && object->max_age >= 0 &&
+           cache_control.max_age != object->max_age)
+            goto invalid;
+
+        if((cache_control.s_maxage >= 0) != ((object->s_maxage) >= 0))
+            goto invalid;
+
+        if(cache_control.s_maxage >= 0 && object->s_maxage >= 0 &&
+           cache_control.s_maxage != object->s_maxage)
+            goto invalid;
+
         if(length >= 0 && object->length >= 0)
             if(length != object->length)
                 goto invalid;
@@ -1047,6 +1061,8 @@ validateEntry(ObjectPtr object, int fd,
 
     if(object->age < 0) object->age = object->date;
     if(object->age < 0) object->age = 0; /* a long time ago */
+    if(object->max_age < 0) object->max_age = cache_control.max_age;
+    if(object->s_maxage < 0) object->s_maxage = cache_control.s_maxage;
     if(object->length < 0) object->length = length;
     if(!object->etag)
         object->etag = etag;

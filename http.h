@@ -149,7 +149,7 @@ int httpTimeoutHandler(TimeEventHandlerPtr);
 int httpSetTimeout(HTTPConnectionPtr connection, int secs);
 int httpWriteObjectHeaders(char *buf, int offset, int len, 
                            ObjectPtr object, int from, int to);
-int httpPrintCacheControl(char*, int, int, int, CacheControlPtr);
+int httpPrintCacheControl(char*, int, int, int, CacheControlPtr, ObjectPtr);
 char *httpMessage(int) ATTRIBUTE((pure));
 int htmlString(char *buf, int n, int len, char *s, int slen);
 void htmlPrint(FILE *out, char *s, int slen);
