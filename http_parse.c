@@ -1060,6 +1060,72 @@ httpParseHeaders(int client, AtomPtr url,
                     abort();
                 }
             }
+        } else if(name == atomCacheControl) {
+            int v_start, v_end;
+            j = getNextTokenInList(buf, value_start, 
+                                   &token_start, &token_end, 
+                                   &v_start, &v_end,
+                                   &end);
+            while(1) {
+                if(j < 0) {
+                    do_log(L_WARN, "Couldn't parse Cache-Control.\n");
+                    cache_control.flags |= CACHE_NO;
+                    break;
+                }
+                if(token_compare(buf, token_start, token_end, "no-cache")) {
+                    cache_control.flags |= CACHE_NO;
+                } else if(token_compare(buf, token_start, token_end,
+                                        "public")) {
+                    cache_control.flags |= CACHE_PUBLIC;
+                } else if(token_compare(buf, token_start, token_end, 
+                                        "private")) {
+                    cache_control.flags |= CACHE_PRIVATE;
+                } else if(token_compare(buf, token_start, token_end, 
+                                        "no-store")) {
+                    cache_control.flags |= CACHE_NO_STORE;
+                } else if(token_compare(buf, token_start, token_end, 
+                                        "no-transform")) {
+                    cache_control.flags |= CACHE_NO_TRANSFORM;
+                } else if(token_compare(buf, token_start, token_end,
+                                        "must-revalidate") ||
+                          token_compare(buf, token_start, token_end,
+                                        "must-validate")) { /* losers */
+                    cache_control.flags |= CACHE_MUST_REVALIDATE;
+                } else if(token_compare(buf, token_start, token_end, 
+                                        "proxy-revalidate")) {
+                    cache_control.flags |= CACHE_PROXY_REVALIDATE;
+                } else if(token_compare(buf, token_start, token_end,
+                                        "only-if-cached")) {
+                    cache_control.flags |= CACHE_ONLY_IF_CACHED;
+                } else if(token_compare(buf, token_start, token_end,
+                                        "max-age") ||
+                          token_compare(buf, token_start, token_end,
+                                        "maxage") || /* losers */
+                          token_compare(buf, token_start, token_end,
+                                        "s-maxage") ||
+                          token_compare(buf, token_start, token_end,
+                                        "min-fresh")) {
+                    parseCacheControl(buf, token_start, token_end,
+                                      v_start, v_end,
+                                      &cache_control.max_age);
+                } else if(token_compare(buf, token_start, token_end,
+                                        "max-stale")) {
+                    parseCacheControl(buf, token_start, token_end,
+                                      v_start, v_end,
+                                      &cache_control.max_stale);
+                } else {
+                    do_log(L_WARN, "Unsupported Cache-Control directive ");
+                    do_log_n(L_WARN, buf + token_start, 
+                             (v_end >= 0 ? v_end : token_end) - token_start);
+                    do_log(L_WARN, " -- ignored.\n");
+                }
+                if(end)
+                    break;
+                j = getNextTokenInList(buf, j, 
+                                       &token_start, &token_end,
+                                       &v_start, &v_end,
+                                       &end);
+            }
         } else if(name == atomContentRange) {
             if(!client) {
                 j = parseContentRange(buf, value_start, 
@@ -1129,73 +1195,6 @@ httpParseHeaders(int client, AtomPtr url,
                 }
             }
         } else {
-            if(name == atomCacheControl) {
-                int v_start, v_end;
-                j = getNextTokenInList(buf, value_start,
-                                       &token_start, &token_end,
-                                       &v_start, &v_end,
-                                       &end);
-                while(1) {
-                    if(j < 0) {
-                        do_log(L_WARN, "Couldn't parse Cache-Control.\n");
-                        cache_control.flags |= CACHE_NO;
-                        break;
-                    }
-                    if(token_compare(buf, token_start, token_end, "no-cache")) {
-                        cache_control.flags |= CACHE_NO;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "public")) {
-                        cache_control.flags |= CACHE_PUBLIC;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "private")) {
-                        cache_control.flags |= CACHE_PRIVATE;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "no-store")) {
-                        cache_control.flags |= CACHE_NO_STORE;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "no-transform")) {
-                        cache_control.flags |= CACHE_NO_TRANSFORM;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "must-revalidate") ||
-                              token_compare(buf, token_start, token_end,
-                                            "must-validate")) { /* losers */
-                        cache_control.flags |= CACHE_MUST_REVALIDATE;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "proxy-revalidate")) {
-                        cache_control.flags |= CACHE_PROXY_REVALIDATE;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "only-if-cached")) {
-                        cache_control.flags |= CACHE_ONLY_IF_CACHED;
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "max-age") ||
-                              token_compare(buf, token_start, token_end,
-                                            "maxage") || /* losers */
-                              token_compare(buf, token_start, token_end,
-                                            "s-maxage") ||
-                              token_compare(buf, token_start, token_end,
-                                            "min-fresh")) {
-                        parseCacheControl(buf, token_start, token_end,
-                                          v_start, v_end,
-                                          &cache_control.max_age);
-                    } else if(token_compare(buf, token_start, token_end,
-                                            "max-stale")) {
-                        parseCacheControl(buf, token_start, token_end,
-                                          v_start, v_end,
-                                          &cache_control.max_stale);
-                    } else {
-                        do_log(L_WARN, "Unsupported Cache-Control directive ");
-                        do_log_n(L_WARN, buf + token_start,
-                                 (v_end >= 0 ? v_end : token_end) - token_start);
-                        do_log(L_WARN, " -- ignored.\n");
-                    }
-                    if(end)
-                        break;
-                    j = getNextTokenInList(buf, j,
-                                           &token_start, &token_end,
-                                           &v_start, &v_end,
-                                           &end);
-                }
-            }
             if(!client && name == atomContentType) {
                 if(token_compare(buf, value_start, value_end,
                                  "multipart/byteranges")) {
