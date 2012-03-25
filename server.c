@@ -1074,7 +1074,8 @@ httpServerDelayedDoSide(HTTPConnectionPtr connection)
         free_chunk_arenas();
         handler = scheduleTimeEvent(0, httpClientDelayedDoSideHandler,
                                     sizeof(connection), &connection);
-        do_log(L_ERROR, "Couldn't schedule DoSide.\n");
+        if(!handler)
+            do_log(L_ERROR, "Couldn't schedule DoSide.\n");
         /* Somebody will hopefully end up timing out. */
         return 1;
     }
@@ -1742,12 +1743,14 @@ httpServerHandler(int status,
         if(status >= 0 || status == ECONNRESET) {
             message = internAtom("Couldn't send request to server: "
                                  "short write");
+            httpServerAbort(connection, status != -ECLIENTRESET, 502, message);
         } else {
             if(status != -EPIPE)
                 do_log_error(L_ERROR, -status,
                              "Couldn't send request to server");
             message = 
                 internAtomError(-status, "Couldn't send request to server");
+            httpServerAbort(connection, status != -ECLIENTRESET, 502, message);
         }
         goto fail;
     }
