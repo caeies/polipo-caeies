@@ -2135,7 +2135,7 @@ indexDiskObjects(FILE *out, const char *root, int recursive)
         goto trailer;
     }
 
-    if(diskCacheRoot->length >= 1024) {
+    if(diskCacheRoot->length >= sizeof(buf)) {
         fprintf(out,
                 "<p>The value of <tt>diskCacheRoot</tt> is "
                 "too long (%d).</p>\n",
@@ -2148,7 +2148,7 @@ indexDiskObjects(FILE *out, const char *root, int recursive)
         buf[diskCacheRoot->length] = '\0';
         n = diskCacheRoot->length;
     } else {
-        n = urlDirname(buf, 1024, root, strlen(root));
+        n = urlDirname(buf, sizeof(buf), root, strlen(root));
     }
     if(n > 0) {
         if(recursive) {
@@ -2176,8 +2176,8 @@ indexDiskObjects(FILE *out, const char *root, int recursive)
                 while(1) {
                     dirent = readdir(dir);
                     if(!dirent) break;
-                    if(n + strlen(dirent->d_name) < 1024) {
-                        strcpy(buf + n, dirent->d_name);
+                    if(n + strlen(dirent->d_name) < sizeof(buf)) {
+                        strncpy(buf + n, dirent->d_name, sizeof(buf));
                     } else {
                         continue;
                     }
@@ -2233,7 +2233,7 @@ indexDiskObjects(FILE *out, const char *root, int recursive)
                     if(tm == NULL)
                         n = -1;
                     else
-                        n = strftime(buf, 1024, "%d.%m.%Y", tm);
+                        n = strftime(buf, sizeof(buf), "%d.%m.%Y", tm);
                 } else
                     n = -1;
                 if(n > 0) {
@@ -2248,7 +2248,7 @@ indexDiskObjects(FILE *out, const char *root, int recursive)
                     if(tm == NULL)
                         n = -1;
                     else
-                        n = strftime(buf, 1024, "%d.%m.%Y", tm);
+                        n = strftime(buf, sizeof(buf), "%d.%m.%Y", tm);
                 } else
                     n = -1;
                 if(n > 0) {
