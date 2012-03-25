@@ -1240,7 +1240,8 @@ httpClientNoticeRequest(HTTPRequestPtr request, int novalidate)
         return 1;
 
     conditional = (haveData && request->method == METHOD_GET);
-    if(!mindlesslyCacheVary && (request->object->cache_control & CACHE_VARY))
+    //Not sure of this, But should be ok
+    if(mindlesslyCacheVary == 2 && (request->object->cache_control & CACHE_VARY))
         conditional = conditional && (request->object->etag != NULL);
 
     conditional =
