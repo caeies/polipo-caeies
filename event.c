@@ -315,12 +315,22 @@ allocateFdEventNum(int fd)
         if(!new_poll_fds)
             return -1;
         new_fdEvents = realloc(fdEvents, new_size * sizeof(FdEventHandlerPtr));
-        if(!new_fdEvents)
+        if(!new_fdEvents) {
+            //Reshrink it.
+            poll_fds = realloc(new_poll_fds, fdEventSize);
+            assert((fdEventSize == 0) || (poll_fds != NULL));
             return -1;
+        }
         new_fdEventsLast = realloc(fdEventsLast, 
                                    new_size * sizeof(FdEventHandlerPtr));
-        if(!new_fdEventsLast)
+        if(!new_fdEventsLast) {
+            //Reshrink it.
+            poll_fds = realloc(new_poll_fds, fdEventSize);
+            assert((fdEventSize == 0) || poll_fds != NULL);
+            fdEvents = realloc(new_fdEvents, fdEventSize);
+            assert((fdEventSize == 0) || fdEvents != NULL);
             return -1;
+        }
 
         poll_fds = new_poll_fds;
         fdEvents = new_fdEvents;
