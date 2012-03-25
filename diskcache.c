@@ -1080,9 +1080,12 @@ validateEntry(ObjectPtr object, int fd,
         if(object->numchunks >= 1) {
             if(object->chunks[0].data == NULL)
                 object->chunks[0].data = maybe_get_chunk();
-            if(object->chunks[0].data)
-                objectAddData(object, buf + body_offset,
+            if(object->chunks[0].data) {
+                rc = objectAddData(object, buf + body_offset,
                               0, MIN(offset - body_offset, CHUNK_SIZE));
+                if(rc < 0) /* What to do here ? */
+                    goto fail;
+            }
         }
     }
 
