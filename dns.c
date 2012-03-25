@@ -1103,7 +1103,8 @@ really_do_dns(AtomPtr name, ObjectPtr object)
     removeQuery(query);
  free_fallback:
     releaseObject(query->object);
-    cancelTimeEvent(query->timeout_handler);
+    if(query->timeout_handler)
+        cancelTimeEvent(query->timeout_handler);
     free(query);
  fallback:
     if(dnsUseGethostbyname >= 1) {

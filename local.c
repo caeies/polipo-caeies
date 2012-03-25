@@ -567,6 +567,10 @@ fillSpecialObject(ObjectPtr object, void (*fn)(FILE*, char*), void* closure)
                         internAtom("Couldn't allocate request\n"));
             notifyObject(object);
             /* specialRequestHandler will take care of the rest. */
+            /* Caeies: not sure of that at all, but what to do ? */
+            do_stream(IO_IMMEDIATE | IO_READ, filedes[0], 0, 0, 0,
+                      specialRequestHandler, NULL);
+            return;
         } else {
             request->buf = get_chunk();
             if(request->buf == NULL) {
@@ -576,6 +580,10 @@ fillSpecialObject(ObjectPtr object, void (*fn)(FILE*, char*), void* closure)
                 abortObject(object, 503,
                             internAtom("Couldn't allocate request\n"));
                 notifyObject(object);
+                /* Caeies: not sure of that at all, but what to do ? */
+                do_stream(IO_IMMEDIATE | IO_READ, filedes[0], 0, 0, 0,
+                      specialRequestHandler, NULL);
+                return;
             }
         }
         object->flags |= OBJECT_INPROGRESS;
