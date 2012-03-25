@@ -1155,6 +1155,11 @@ httpParseHeaders(int client, AtomPtr url,
             }
         } else if(name == atomXPolipoLocation) {
             if(location_return) {
+                /*location should be NULL since there is only one
+                atomXPolipoLocation per file, anyway, check it */
+                assert(location == NULL);
+                if(location != NULL)
+                    free(location); 
                 location = 
                     strdup_n(buf + value_start, value_end - value_start);
                 if(location == NULL) {
