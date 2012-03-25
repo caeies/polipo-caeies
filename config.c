@@ -780,11 +780,15 @@ parseConfigLine(char *line, char *filename, int lineno, int set)
         while(1) {
             i = parseAtom(line, i, &value, 
                           (var->type == CONFIG_ATOM_LIST_LOWER));
-            if(i < 0) goto syntax;
+            if(i < 0) {
+                destroyAtomList(alv);
+                goto syntax;
+            }
             if(!value) {
                 if(!set)
                     do_log(L_ERROR, "%s:%d: couldn't allocate atom.\n",
                            filename, lineno);
+                destroyAtomList(alv);
                 return -1;
             }
             atomListCons(value, alv);
