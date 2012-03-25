@@ -1614,7 +1614,10 @@ httpWriteRequest(HTTPConnectionPtr connection, HTTPRequestPtr request,
     do_log(D_SERVER_REQ, "Server request: ");
     do_log_n(D_SERVER_REQ, url + x, y - x);
     do_log(D_SERVER_REQ, ": ");
-    do_log_n(D_SERVER_REQ, connection->reqbuf, n);
+    if(n >= 0)
+        do_log_n(D_SERVER_REQ, connection->reqbuf, n);
+    else
+        do_log(D_SERVER_REQ, "(unknown, negative returns %d)", n);
     do_log(D_SERVER_REQ, " (method %d from %d to %d, 0x%lx for 0x%lx)\n",
            method, from, to,
            (unsigned long)connection, (unsigned long)object);
