@@ -738,7 +738,10 @@ parseConfigLine(char *line, char *filename, int lineno, int set)
         }
         while(1) {
             i = parseInt(line, i, &from);
-            if(i < 0) goto syntax;
+            if(i < 0) {
+                destroyIntList(ilv);
+                goto syntax;
+            }
             to = from;
             i = skipWhitespace(line, i);
             if(line[i] == '-') {
