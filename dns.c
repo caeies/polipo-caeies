@@ -1448,7 +1448,10 @@ labelsToString(char *buf, int offset, int n, char *d, int m, int *j_return)
             if(i >= n) return -1;
             o = (ll & ~(3 << 6)) << 8 | *(unsigned char*)&buf[i];
             i++;
-            labelsToString(buf, o, n, &d[j], m - j, &k);
+            o = labelsToString(buf, o, n, &d[j], m - j, &k);
+            if(o < 0)
+               /* An error occurs, what to do ? */
+               return -1;
             j += k;
             break;
         } else if((ll & (3 << 6)) == 0) {
