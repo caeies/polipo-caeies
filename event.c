@@ -90,6 +90,23 @@ sigexit(int signo)
     else
         exitFlag = 4;
 }
+#ifdef DEBUG_POLIPO
+static void
+sigdebug(int sig)
+{
+  pid_t pid = getpid();
+  do_log(L_ERROR, "Oops, catching deadly signal %d, trying to dump trace\n", sig);
+  char gdbcmd[512] = {0};
+  snprintf(gdbcmd, sizeof(gdbcmd)
+      , GDB_PATH"gdb -batch -p %d -eval-command=\"bt\" -eval-command=\"bt full\" -eval-command=\"info registers\" -eval-command=\"info stack\" | gzip - >"CRASH_PATH"crash.log.gz 2>&1 ; sync", pid);
+  int ign = system(gdbcmd);
+  if(ign)
+    do_log(L_ERROR, "Oops, cannot debug trace\n");
+  /* Restore normal behavior */
+  signal(sig, SIG_DFL);
+  raise (sig);
+}
+#endif
 #endif
 
 void
@@ -135,6 +152,38 @@ initEvents()
     sa.sa_mask = ss;
     sa.sa_flags = 0;
     sigaction(SIGUSR2, &sa, NULL);
+
+#ifdef DEBUG_POLIPO
+    sigemptyset(&ss);
+    sa.sa_handler = sigdebug;
+    sa.sa_mask = ss;
+    sa.sa_flags = 0;
+    sigaction(SIGABRT, &sa, NULL);
+
+    sigemptyset(&ss);
+    sa.sa_handler = sigdebug;
+    sa.sa_mask = ss;
+    sa.sa_flags = 0;
+    sigaction(SIGSEGV, &sa, NULL);
+
+    sigemptyset(&ss);
+    sa.sa_handler = sigdebug;
+    sa.sa_mask = ss;
+    sa.sa_flags = 0;
+    sigaction(SIGBUS, &sa, NULL);
+
+    sigemptyset(&ss);
+    sa.sa_handler = sigdebug;
+    sa.sa_mask = ss;
+    sa.sa_flags = 0;
+    sigaction(SIGILL, &sa, NULL);
+
+    sigemptyset(&ss);
+    sa.sa_handler = sigdebug;
+    sa.sa_mask = ss;
+    sa.sa_flags = 0;
+    sigaction(SIGFPE, &sa, NULL);
+#endif
 #endif
 
     timeEventQueue = NULL;
@@ -183,6 +232,8 @@ uninitEvents(void)
     sa.sa_mask = ss;
     sa.sa_flags = 0;
     sigaction(SIGUSR2, &sa, NULL);
+
+    /* Let the debug signal in place until exit */
 #endif
 }
 
@@ -196,6 +247,13 @@ interestingSignals(sigset_t *ss)
     sigaddset(ss, SIGINT);
     sigaddset(ss, SIGUSR1);
     sigaddset(ss, SIGUSR2);
+#ifdef DEBUG_POLIPO
+    sigaddset(ss, SIGABRT);
+    sigaddset(ss, SIGSEGV);
+    sigaddset(ss, SIGBUS);
+    sigaddset(ss, SIGILL);
+    sigaddset(ss, SIGFPE);
+#endif
 }
 #endif
 
