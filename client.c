@@ -229,7 +229,7 @@ httpClientFinish(HTTPConnectionPtr connection, int s)
            into the queue */
         if(connection->request) {
             if(connection->request->object != NULL)
-                httpClientNoticeRequest(connection->request, 1);
+                httpClientNoticeRequest(connection->request, 2);
             else
                 assert(connection->flags & CONN_READER);
         }
@@ -1198,9 +1198,10 @@ httpClientNoticeRequest(HTTPRequestPtr request, int novalidate)
         }
     }
 
-    if(!(request->object->flags & OBJECT_VALIDATING) &&
+    //XXX If we are called from httpServeObject, don't call us recursively ...
+    if((novalidate != 1) && (!(request->object->flags & OBJECT_VALIDATING) &&
        ((!validate && haveData) ||
-        (request->object->flags & OBJECT_FAILED))) {
+        (request->object->flags & OBJECT_FAILED)))) {
         if(serveNow) {
             connection->flags |= CONN_WRITER;
             lockChunk(request->object, request->from / CHUNK_SIZE);
